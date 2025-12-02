@@ -5,6 +5,23 @@
 
 #include <vector>
 
+inline aabb surrounding_box(const aabb& box0, const aabb& box1){
+    point3 small(
+        std::fmin(box0.min().x(), box1.min().x()),
+        std::fmin(box0.min().y(), box1.min().y()),
+        std::fmin(box0.min().z(), box1.min().z())
+    );
+    
+    point3 big(
+        std::fmax(box0.max().x(), box1.max().x()),
+        std::fmax(box0.max().y(), box1.max().y()),
+        std::fmax(box0.max().z(), box1.max().z())
+    );
+    
+    return aabb(small, big);
+
+}
+
 
 class hittable_list : public hittable {
   public:
@@ -34,6 +51,20 @@ class hittable_list : public hittable {
 
         return hit_anything;
     }
+    
+    aabb bounding_box() const override{
+        if(objects.empty()) return aabb();
+
+        aabb box = objects[0]->bounding_box();
+
+        for(size_t i = 1 ; i< objects.size(); ++ i){
+            box = surrounding_box(box, objects[i]->bounding_box());
+        }
+        return box;
+    }
+    
 };
+
+
 
 #endif
