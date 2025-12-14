@@ -48,8 +48,6 @@ class bvh_node : public hittable{
         bool hit_right = right-> hit(r, interval(ray_t.min, hit_left ? hit_record.t : ray_t.max),
                 hit_record);
         return hit_left || hit_right;
-
-
     }
 
     aabb bounding_box() const override{
