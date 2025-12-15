@@ -24,8 +24,6 @@ class camera {
         initialize();
 
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-        #pragma omp parallel for schedule(dynamic)
         for (int j = 0; j < image_height; j++) {
             #ifndef NDEBUG
                 std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
