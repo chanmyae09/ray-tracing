@@ -18,25 +18,37 @@ class camera {
 
     double defocus_angle = 0;  // Variation angle of rays through each pixel
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
-
+    const int TILE_SIZE = 16;
     void render(const hittable& world) {
         initialize();
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-        for (int j = 0; j < image_height; j++) {
-            #ifndef NDEBUG
-                std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-            #endif
-            for (int i = 0; i < image_width; i++) {
-                color pixel_color(0,0,0);
-                for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r,max_depth, world);
-                }
-                write_color(std::cout, pixel_samples_scale * pixel_color);
+        std::vector<color> pixels(image_width * image_height, color(0,0,0));
 
+        // Loop over tiles
+        for (int tile_y = 0; tile_y < image_height; tile_y += TILE_SIZE) {
+            for (int tile_x = 0; tile_x < image_width; tile_x += TILE_SIZE) {
+                
+                // Loop over pixels within this tile
+                for (int j = tile_y; j < std::min(tile_y + TILE_SIZE, image_height); j++) {
+                    for (int i = tile_x; i < std::min(tile_x + TILE_SIZE, image_width); i++) {
+                        
+                        color pixel_color(0,0,0);
+                        for (int sample = 0; sample < samples_per_pixel; sample++) {
+                            ray r = get_ray(i, j);
+                            pixel_color += ray_color(r, max_depth, world);
+                        }
+                        pixels[j * image_width + i] = pixel_samples_scale * pixel_color;
+                    }
+                }
             }
         }
+
+        // Write all pixels
+        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+        for (const auto& pixel : pixels) {
+            write_color(std::cout, pixel);
+        }
+
     }
 
 
