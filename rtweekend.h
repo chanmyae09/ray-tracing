@@ -6,6 +6,7 @@
 #include <limits>
 #include <memory>
 #include <random>
+#include <cstdint>
 
 // C++ Std Usings
 
@@ -22,11 +23,20 @@ inline double degrees_to_radians(double degrees) {
     return degrees * pi / 180.0;
 }
 
-inline double random_double() {
-    // Returns a random real in [0,1).
-    return std::rand() / (RAND_MAX + 1.0);
-}
+// inline double random_double() {
+//     // Returns a random real in [0,1).
+//     return std::rand() / (RAND_MAX + 1.0);
+// }
 
+
+inline double random_double() {
+    // xorshift32 RNG - much faster than std::rand()
+    static thread_local uint32_t state = 0x12345678;
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    return (state >> 8) * 0x1.0p-24; // converts to [0,1)
+}
 
 
 inline double random_double(double min, double max) {
